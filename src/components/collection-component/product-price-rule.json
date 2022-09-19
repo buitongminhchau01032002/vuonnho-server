@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_collection_component_product_price_rules",
+  "info": {
+    "displayName": "productPriceRule",
+    "icon": "money-bill"
+  },
+  "options": {},
+  "attributes": {
+    "minQuantity": {
+      "type": "integer",
+      "required": true
+    },
+    "price": {
+      "type": "biginteger",
+      "required": true
+    }
+  }
+}

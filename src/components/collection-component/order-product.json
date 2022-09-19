@@ -1,0 +1,45 @@
+{
+  "collectionName": "components_collection_component_order_products",
+  "info": {
+    "displayName": "orderProduct",
+    "icon": "cube"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "image": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false,
+      "required": true
+    },
+    "quantity": {
+      "type": "integer",
+      "required": true,
+      "min": 1
+    },
+    "price": {
+      "type": "biginteger",
+      "required": true
+    },
+    "priceRules": {
+      "type": "component",
+      "repeatable": true,
+      "component": "collection-component.product-price-rule"
+    },
+    "totalPrice": {
+      "type": "biginteger",
+      "required": true
+    },
+    "product": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::product.product"
+    }
+  }
+}

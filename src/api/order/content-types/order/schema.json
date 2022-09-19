@@ -1,0 +1,49 @@
+{
+  "kind": "collectionType",
+  "collectionName": "orders",
+  "info": {
+    "singularName": "order",
+    "pluralName": "orders",
+    "displayName": "Order",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "address": {
+      "type": "text",
+      "required": true
+    },
+    "phone": {
+      "type": "string",
+      "required": true
+    },
+    "note": {
+      "type": "text"
+    },
+    "confirmationTimes": {
+      "type": "component",
+      "repeatable": true,
+      "component": "collection-component.order-confirmation-time"
+    },
+    "products": {
+      "type": "component",
+      "repeatable": true,
+      "component": "collection-component.order-product"
+    },
+    "orderStatus": {
+      "type": "enumeration",
+      "enum": [
+        "pedding",
+        "completed"
+      ],
+      "default": "pedding"
+    }
+  }
+}

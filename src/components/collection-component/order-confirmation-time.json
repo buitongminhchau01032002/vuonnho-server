@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_order_confirmation_time_order_confirmation_times",
+  "info": {
+    "displayName": "orderConfirmationTime",
+    "icon": "clock",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "begin": {
+      "type": "time",
+      "required": true
+    },
+    "end": {
+      "type": "time",
+      "required": true
+    }
+  }
+}
