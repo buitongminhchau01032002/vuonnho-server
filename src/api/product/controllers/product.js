@@ -11,8 +11,8 @@ module.exports = createCoreController("api::product.product", ({ strapi }) => ({
         const { slug } = ctx.params;
 
         const query = {
-            filters: { slug },
             ...ctx.query,
+            filters: { ...ctx.query.filter, slug },
         };
 
         const product = await strapi.entityService.findMany("api::product.product", query);
