@@ -53,6 +53,7 @@ module.exports = createCoreController("api::order.order", ({ strapi }) => ({
                 products[i].quantity = cart.products[i].quantity;
             }
 
+            let numOfProducts = 0;
             let totalMoney = 0;
             let discountMoney = 0;
             let intoMoney = 0;
@@ -94,8 +95,10 @@ module.exports = createCoreController("api::order.order", ({ strapi }) => ({
 
             // Calc billing
             // todo: DISCOUNT RULE
+            numOfProducts = products.length;
             intoMoney = totalMoney - discountMoney;
             if (
+                numOfProducts !== cart.billing.numOfProducts ||
                 totalMoney !== cart.billing.totalMoney ||
                 discountMoney !== cart.billing.discountMoney ||
                 intoMoney !== cart.billing.intoMoney
@@ -104,11 +107,13 @@ module.exports = createCoreController("api::order.order", ({ strapi }) => ({
                     errorRes = {
                         message: "Incorrect billing",
                         billingInServer: {
+                            numOfProducts,
                             totalMoney,
                             discountMoney,
                             intoMoney,
                         },
                         billingInClient: {
+                            numOfProducts: cart.billing.numOfProducts,
                             totalMoney: cart.billing.totalMoney,
                             discountMoney: cart.billing.discountMoney,
                             intoMoney: cart.billing.intoMoney,
@@ -120,6 +125,7 @@ module.exports = createCoreController("api::order.order", ({ strapi }) => ({
             const objRes = {};
             objRes.products = products;
             objRes.billing = {
+                numOfProducts,
                 totalMoney,
                 discountMoney,
                 intoMoney,
