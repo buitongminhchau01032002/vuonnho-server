@@ -9,59 +9,130 @@ const { createCoreController } = require("@strapi/strapi").factories;
 module.exports = createCoreController("api::order.order", ({ strapi }) => ({
     async validateCart(ctx) {
         const cart = ctx.request.body;
+        let errorRes = null;
         try {
-            let totalMoney = 0;
-            const products = [];
+            // GET products and transfrom from request
+            let products = [];
             for (let i = 0; i < cart.products.length; i++) {
                 const productRaw = cart.products[i];
+                // get product
                 const product = await strapi.entityService.findOne(
                     "api::product.product",
                     productRaw.id,
                     {
-                        fields: ["id", "name", "slug", "salePrice", "listPrice"],
+                        fields: [
+                            "id",
+                            "name",
+                            "slug",
+                            "description",
+                            "detail",
+                            "salePrice",
+                            "listPrice",
+                        ],
                         populate: {
                             images: {
                                 fields: ["formats", "url", "alternativeText"],
                             },
                             priceRules: true,
+                            category: true,
                         },
                     }
                 );
                 if (product) {
                     products.push(product);
-                    if (product.priceRules.length === 0) {
-                        totalMoney += productRaw.quantity * product.salePrice;
-                    } else {
-                        const priceRulesSorted = product.priceRules.sort(
-                            (a, b) => b.minQuantity - a.minQuantity
-                        );
-                        let quantity = productRaw.quantity;
-                        let totalPrice = 0;
-                        priceRulesSorted.forEach((priceRule) => {
-                            const quantityOfRule =
-                                Math.floor(quantity / priceRule.minQuantity) *
-                                priceRule.minQuantity;
-                            totalPrice += quantityOfRule * priceRule.price;
-                            quantity -= quantityOfRule;
-                        });
-                        totalPrice += quantity * product.salePrice;
-                        totalMoney += totalPrice;
+                } else {
+                    if (!errorRes) {
+                        errorRes = {
+                            message: `Not found product at index ${i}`,
+                            invalidProduct: productRaw,
+                        };
                     }
                 }
             }
-            const objRes = {};
-            // todo: DISCOUNT RULE
+            for (let i = 0; i < products.length; i++) {
+                products[i].quantity = cart.products[i].quantity;
+            }
 
+            let totalMoney = 0;
+            let discountMoney = 0;
+            let intoMoney = 0;
+            for (let i = 0; i < products.length; i++) {
+                const product = products[i];
+                if (product.priceRules?.length === 0) {
+                    const totalPrice = product.quantity * product.salePrice;
+                    product.totalPrice = totalPrice;
+                    totalMoney += totalPrice;
+                } else {
+                    // [...product.priceRules] To fix sort
+                    const priceRulesSorted = [...product.priceRules].sort(
+                        (a, b) => b.minQuantity - a.minQuantity
+                    );
+                    let quantity = product.quantity;
+                    let totalPrice = 0;
+                    priceRulesSorted.forEach((priceRule) => {
+                        const quantityOfRule =
+                            Math.floor(quantity / priceRule.minQuantity) * priceRule.minQuantity;
+                        totalPrice += quantityOfRule * priceRule.price;
+                        quantity -= quantityOfRule;
+                    });
+                    totalPrice += quantity * product.salePrice;
+                    product.totalPrice = totalPrice;
+                    totalMoney += totalPrice;
+                }
+
+                // Check total price
+                if (product.totalPrice !== cart.products[i].totalPrice) {
+                    if (!errorRes) {
+                        errorRes = {
+                            message: `Incorrect price product at index ${i}`,
+                            priceInServer: product.totalPrice,
+                            priceInClient: cart.products[i].totalPrice,
+                        };
+                    }
+                }
+            }
+
+            // Calc billing
+            // todo: DISCOUNT RULE
+            intoMoney = totalMoney - discountMoney;
+            if (
+                totalMoney !== cart.billing.totalMoney ||
+                discountMoney !== cart.billing.discountMoney ||
+                intoMoney !== cart.billing.intoMoney
+            ) {
+                if (!errorRes) {
+                    errorRes = {
+                        message: "Incorrect billing",
+                        billingInServer: {
+                            totalMoney,
+                            discountMoney,
+                            intoMoney,
+                        },
+                        billingInClient: {
+                            totalMoney: cart.billing.totalMoney,
+                            discountMoney: cart.billing.discountMoney,
+                            intoMoney: cart.billing.intoMoney,
+                        },
+                    };
+                }
+            }
+
+            const objRes = {};
             objRes.products = products;
-            objRes.totalBilling = {
+            objRes.billing = {
                 totalMoney,
-                discountMoney: 0,
-                intoMoney: totalMoney,
+                discountMoney,
+                intoMoney,
             };
-            return objRes;
+            if (!errorRes) {
+                return objRes;
+            } else {
+                errorRes.validCart = objRes;
+                return ctx.badRequest("invalidCart", errorRes);
+            }
         } catch (error) {
             console.log(error);
-            return ctx.badRequest("name is missing", { mess: "unknow" });
+            return ctx.internalServerError("internal server error");
         }
     },
 }));
