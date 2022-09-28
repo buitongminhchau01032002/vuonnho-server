@@ -44,6 +44,22 @@
         "completed"
       ],
       "default": "pedding"
+    },
+    "numOfProducts": {
+      "type": "integer",
+      "required": true
+    },
+    "totalMoney": {
+      "type": "biginteger",
+      "required": true
+    },
+    "discountMoney": {
+      "type": "biginteger",
+      "required": true
+    },
+    "intoMoney": {
+      "type": "biginteger",
+      "required": true
     }
   }
 }

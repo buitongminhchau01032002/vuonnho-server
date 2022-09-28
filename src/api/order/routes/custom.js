@@ -2,7 +2,7 @@ module.exports = {
     routes: [
         {
             method: "POST",
-            path: "/order/validate-cart",
+            path: "/orders/validate-and-order",
             handler: "api::order.order.validateCart",
             config: {
                 auth: false,
