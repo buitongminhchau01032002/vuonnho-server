@@ -93,7 +93,20 @@ module.exports = createCoreController("api::order.order", ({ strapi }) => ({
             }
 
             // Calc billing
-            // todo: DISCOUNT RULE
+            const orderPriceRules = await strapi.entityService.findMany(
+                "api::order-price-rule.order-price-rule"
+            );
+            if (orderPriceRules && orderPriceRules.length !== 0) {
+                const orderPriceRulesSorted = [...orderPriceRules].sort(
+                    (a, b) => b.minTotalMoney - a.minTotalMoney
+                );
+                for (let i = 0; i < orderPriceRulesSorted.length; i++) {
+                    if (totalMoney > orderPriceRulesSorted[i].minTotalMoney) {
+                        discountMoney = orderPriceRulesSorted[i].discountMoney;
+                        break;
+                    }
+                }
+            }
             numOfProducts = products.length;
             intoMoney = totalMoney - discountMoney;
             if (
@@ -166,11 +179,6 @@ module.exports = createCoreController("api::order.order", ({ strapi }) => ({
                 begin: time.begin,
                 end: time.end,
             }));
-
-            // let numOfProducts = 0;
-            // let totalMoney = 0;
-            // let discountMoney = 0;
-            // let intoMoney = 0;
 
             // create entry
             entryObj.name = reqBody.name;

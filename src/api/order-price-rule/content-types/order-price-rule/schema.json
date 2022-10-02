@@ -1,0 +1,23 @@
+{
+  "kind": "collectionType",
+  "collectionName": "order_price_rules",
+  "info": {
+    "singularName": "order-price-rule",
+    "pluralName": "order-price-rules",
+    "displayName": "OrderPriceRule",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "minTotalMoney": {
+      "type": "biginteger",
+      "required": true
+    },
+    "discountMoney": {
+      "type": "biginteger"
+    }
+  }
+}
